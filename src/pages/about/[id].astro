@@ -1,0 +1,42 @@
+---
+import { type CollectionEntry, getCollection, render } from "astro:content";
+import Markdown from "../../components/post/Markdown.astro";
+import Button from "../../components/ui/Button";
+import MainGridLayout from "../../layouts/MainGridLayout.astro";
+export async function getStaticPaths() {
+	const specs = await getCollection("spec");
+	return specs
+		.filter((s) => s.id.startsWith("about-"))
+		.map((spec) => ({
+			params: {
+				id: spec.id
+					.replace("about-", "")
+					.replace(".md", "")
+					.replace(".mdx", ""),
+			},
+			props: { spec },
+		}));
+}
+interface Props {
+	spec: CollectionEntry<"spec">;
+}
+const { spec } = Astro.props;
+const { Content } = await render(spec);
+---
+<MainGridLayout title={spec.data.title} description={spec.data.description}>
+    <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative mb-4">
+        <article class="card-base z-10 px-6 md:px-9 py-6 relative w-full">
+            <h1 class="sr-only">{spec.data.title}</h1>
+            <div class="prose custom-md dark:prose-invert max-w-none">
+                <Markdown class="mt-0">
+                    <Content />
+                </Markdown>
+            </div>
+            <div class="mt-12 pt-6 border-t border-dashed border-black/10 dark:border-white/10 flex justify-center">
+                <Button as="a" href="/about/" variant="unstyled" class="btn-regular rounded-full px-6 py-2 text-sm font-bold bg-primary/10 text-primary hover:bg-primary/20 transition-all">
+                    View Full About Page
+                </Button>
+            </div>
+        </article>
+    </div>
+</MainGridLayout>

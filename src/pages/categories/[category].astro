@@ -1,0 +1,29 @@
+---
+import ArchivePanel from "@components/pages/ArchivePanel";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { getCategoryList, getSortedPostsList } from "@utils/content-utils";
+export async function getStaticPaths() {
+	const categories = await getCategoryList();
+	return categories.map((category) => {
+		return {
+			params: { category: category.name },
+			props: { name: category.name },
+		};
+	});
+}
+const { name } = Astro.props;
+const allPosts = await getSortedPostsList();
+const filteredPosts = allPosts.filter((post) => {
+	if (name === i18n(I18nKey.uncategorized)) {
+		return !post.data.category;
+	}
+	return post.data.category === name;
+});
+const title = `${i18n(I18nKey.archive)} - ${name}`;
+---
+<MainGridLayout title={title}>
+    <h1 class="sr-only">{title}</h1>
+    <ArchivePanel client:load sortedPosts={filteredPosts}></ArchivePanel>
+</MainGridLayout>

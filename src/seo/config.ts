@@ -1,0 +1,3 @@
+export const MAX_TITLE_LENGTH = 60;
+export const MAX_META_DESCRIPTION_LENGTH = 160;
+export const META_DESCRIPTION_TRUNCATE_AT = 157;

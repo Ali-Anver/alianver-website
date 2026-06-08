@@ -1,0 +1,118 @@
+---
+import StripeFooter from "../ui/StripeFooter.astro";
+import { profileConfig, siteConfig } from "../../config";
+
+interface Props {
+	title: string;
+	count: number;
+	variant?: "dark" | "light";
+}
+
+const { title = "", count = 0, variant = "dark" } = Astro.props;
+const isDark = variant === "dark";
+const authorName = profileConfig.name || siteConfig.title;
+const siteName = siteConfig.title;
+const bio = profileConfig.bio || "Ad Astra Per Aspera";
+---
+{isDark ? (
+    <div class="relative w-full max-w-[840px] bg-lt-ink paper-texture shadow-2xl px-6 md:px-16 py-8 md:py-10 overflow-hidden group">
+        <video
+            autoplay
+            muted
+            loop
+            playsinline
+            preload="auto"
+            class="hero-video absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-1000 ease-in-out pointer-events-none z-0"
+        >
+            <source src="/hero.mp4" type="video/mp4" />
+        </video>
+
+        <div class="absolute inset-0 paper-texture opacity-30 pointer-events-none z-[2]"></div>
+
+        <div class="relative z-10 flex justify-between items-center mb-10 md:mb-12">
+            <div class="flex items-center gap-3">
+                <div class="w-[3px] h-[10px] bg-lt-accent"></div>
+                <span class="font-mono text-[10px] md:text-[11px] font-bold tracking-[0.2em] uppercase text-lt-bg/70">
+                    {authorName} // {siteName}
+                </span>
+            </div>
+            <div class="hidden sm:block">
+                <span class="font-mono text-[10px] md:text-[11px] uppercase tracking-widest text-lt-bg/40">
+                    {count} Records Indexed
+                </span>
+            </div>
+        </div>
+
+        <div class="relative z-10">
+            <div class="absolute -top-4 md:-top-10 -right-8 md:-right-20 pointer-events-none select-none">
+                <span class="font-display text-[32px] md:text-[120px] text-lt-bg opacity-[0.03] leading-none uppercase whitespace-nowrap">
+                    AD ASTRA PER ASPERA
+                </span>
+            </div>
+
+            <h1 class="font-cn text-[38px] md:text-[64px] leading-[1.1] md:leading-[0.85] tracking-tight md:tracking-tighter text-lt-bg font-black mb-6 whitespace-nowrap flex uppercase">
+                {title}
+            </h1>
+
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 pt-6 border-t border-lt-bg/10">
+                <p class="font-cn text-[11px] text-lt-bg/40 tracking-[0.2em]">
+                    {bio}
+                </p>
+            </div>
+        </div>
+
+        <StripeFooter />
+    </div>
+) : (
+    <div class="relative w-full max-w-[840px] bg-lt-bg paper-texture shadow-2xl px-6 md:px-16 py-10 overflow-hidden border-b border-lt-border/10">
+        <div class="relative z-10 flex justify-between items-end">
+            <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                    <div class="w-[3px] h-[10px] bg-lt-accent"></div>
+                    <span class="text-[11px] font-mono tracking-[0.2em] font-bold text-lt-ink uppercase">
+                        Chapter_Archive
+                    </span>
+                </div>
+                <h1 class="font-display text-4xl md:text-6xl tracking-tighter uppercase text-lt-ink">
+                    {title}
+                </h1>
+            </div>
+            <div class="text-right hidden sm:block">
+                <span class="text-[11px] font-mono text-lt-ghost uppercase tracking-widest">
+                    {count} Records Indexed
+                </span>
+            </div>
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 h-[3px] flex opacity-30">
+            <div class="bg-rl-teal w-1/3"></div>
+            <div class="bg-rl-gold w-1/3"></div>
+            <div class="bg-rl-red w-1/3"></div>
+        </div>
+    </div>
+)}
+
+<script>
+    const initVideo = () => {
+        const videos = document.querySelectorAll('.hero-video');
+        videos.forEach(video => {
+            const v = video as HTMLVideoElement;
+            const onReady = () => {
+                v.classList.add("opacity-100");
+                v.classList.remove("opacity-0");
+                v.play().catch(e => console.warn("Video autoplay failed:", e));
+            };
+
+            v.addEventListener("canplaythrough", onReady);
+            v.addEventListener("play", onReady);
+
+            if (v.readyState >= 3) onReady();
+            else v.load();
+        });
+    };
+
+    // 初始化
+    initVideo();
+
+    // 监听 Astro 转场事件
+    document.addEventListener('astro:page-load', initVideo);
+</script>

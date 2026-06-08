@@ -1,0 +1,66 @@
+site:
+  title: "mushraf ali anver"
+  subtitle: "My Personal Website"
+  url: "https://alianver.com"
+  lang: "en"
+  author: "mushraf ali anver"
+  email: "qwq@chongxi.us"
+  favicon: "/images/favicon.webp"
+  banner: ""
+  og_image: "/images/og.webp"
+
+profile:
+  avatar: "/images/chongxi-avatar.webp"
+  name: "mushraf ali anver"
+  bio: "Ad Astra Per Aspera"
+  links:
+    - name: "GitHub"
+      url: "https://github.com/ChongxiSama/Lonetrail"
+    - name: "Docs"
+      url: "https://github.com/ChongxiSama/Lonetrail#readme"
+    - name: "主题目录"
+      url: "https://astro.build/themes/"
+
+nav:
+  - Home: "/"
+  - Archive: "/archive/"
+  - Series: "/seri/"
+  - Links: "/links/"
+  - About: "/about/"
+
+features:
+  breadcrumb: true
+  comments: true
+  search: false
+  donate: false
+  rss_feed: true
+  sitemap: true
+  related_posts: true
+  series: true
+  license: true
+
+seo:
+  enable_json_ld: false
+  breadcrumb: true
+  keywords: "astro, theme, blog, lonetrail"
+  same_as: []
+
+services:
+  posthog:
+    api_key: ""
+    api_host: "https://app.posthog.com"
+  webmention:
+    url: ""
+  blogsclub:
+    badge_url: ""
+  issue_tracker:
+    url: ""
+
+trusted_domains:
+  - "lonetrail.vercel.app"
+
+copyright:
+  text: "mushraf ali anver"
+  site_name: "mushraf ali anver"
+  license: "MIT"
+  license_url: "https://opensource.org/licenses/MIT"

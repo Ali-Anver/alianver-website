@@ -1,0 +1,87 @@
+/* ═══ RHINE LAB LONE TRAIL CODE BLOCK STYLES ═══ */
+
+.expressive-code {
+    margin: 2.5rem 0 !important;
+    filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.15));
+}
+
+/* 应用 Fira Code 字体并开启连字 */
+.expressive-code code {
+    font-family: var(--font-mono) !important;
+    font-variant-ligatures: contextual !important;
+}
+
+/* 移除 Expressive Code 原生的 Mac 风格顶栏 */
+.expressive-code .header, 
+.expressive-code .title,
+.expressive-code .titlebar {
+    display: none !important;
+}
+
+.expressive-code pre {
+    position: relative;
+    /* 模拟扫描线纹理 */
+    background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%) !important;
+    background-size: 100% 4px !important;
+    padding-top: 0.25rem !important;
+    padding-bottom: 1.5rem !important;
+}
+
+/* 采样角标 (采样 L 型边框) */
+.expressive-code pre::before,
+.expressive-code pre::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    pointer-events: none;
+    z-index: 5;
+    opacity: 0.3;
+}
+
+.expressive-code pre::before {
+    top: 0.25rem;
+    left: 0.5rem;
+    border-top: 1px solid #D4621A;
+    border-left: 1px solid #D4621A;
+}
+
+.expressive-code pre::after {
+    bottom: 0.5rem;
+    right: 0.5rem;
+    border-bottom: 1px solid #D4621A;
+    border-right: 1px solid #D4621A;
+}
+
+/* 行号列适配 */
+.expressive-code .gutter {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+    color: rgba(107, 100, 86, 0.4) !important;
+    font-size: 11px !important;
+    padding-left: 0.8rem !important;
+    padding-right: 0.8rem !important;
+    user-select: none;
+}
+
+/* 滚动条美化 */
+.expressive-code pre::-webkit-scrollbar {
+    height: 4px;
+}
+.expressive-code pre::-webkit-scrollbar-thumb {
+    background: #3D3A33;
+}
+.expressive-code pre::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* 移除之前的页脚注入逻辑 */
+.expressive-code figure::after {
+    display: none !important;
+}
+
+/* 页眉背景微调 */
+.rhine-badge {
+    height: 2.6rem !important; /* 固定高度以容纳按钮 */
+    box-sizing: border-box;
+}

@@ -1,0 +1,37 @@
+---
+import ArchiveHeader from "@components/pages/ArchiveHeader.astro";
+import ArchivePanel from "@components/pages/ArchivePanel";
+import { siteConfig } from "../config";
+import I18nKey from "../i18n/i18nKey";
+import { i18n } from "../i18n/translation";
+// SideDrawer import removed.
+import Layout from "../layouts/Layout.astro";
+import { getSortedPosts } from "../utils/content-utils";
+import "../styles/cepato.css";
+
+const sortedPosts = await getSortedPosts();
+
+const navItems = [
+	{ label: "Home", href: "/" },
+	{ label: "Archive", href: "/archive" },
+	{ label: "Friends", href: "/links" },
+	{ label: "About", href: "/about" },
+];
+
+const archiveLabel = i18n(I18nKey.archive);
+const pageTitle = `${archiveLabel} - ${siteConfig.title}`;
+const metaDescription = `${siteConfig.title} ${archiveLabel} - ${sortedPosts.length} records`;
+---
+
+<Layout title={pageTitle} description={metaDescription}>
+	<div class="py-12 md:py-16 flex flex-col items-center gap-0 overflow-x-hidden pt-14">
+
+		<ArchiveHeader
+			title={i18n(I18nKey.archive)}
+			count={sortedPosts.length}
+			variant="dark"
+		/>
+
+		<ArchivePanel client:load sortedPosts={sortedPosts} />
+	</div>
+</Layout>

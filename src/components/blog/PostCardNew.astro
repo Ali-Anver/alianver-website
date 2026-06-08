@@ -1,0 +1,27 @@
+---
+import type { CollectionEntry } from "astro:content";
+import BlogCard from "./BlogCard.astro";
+
+interface Props {
+	entry: any;
+	title: string;
+	category: "Tech" | "Log" | "Meta";
+	published: Date;
+	url: string;
+	description: string;
+	index: number;
+}
+
+const { title, category, published, url, description, index } = Astro.props;
+
+const date = published.toISOString().split("T")[0];
+---
+
+<BlogCard
+    title={title}
+    summary={description}
+    category={category}
+    date={date}
+    index={index}
+    href={url}
+/>

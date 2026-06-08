@@ -1,0 +1,24 @@
+---
+import ArchivePanel from "@components/pages/ArchivePanel";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { getSortedPostsList, getTagList } from "@utils/content-utils";
+export async function getStaticPaths() {
+	const tags = await getTagList();
+	return tags.map((tag) => {
+		return {
+			params: { tag: tag.name },
+			props: { name: tag.name },
+		};
+	});
+}
+const { name } = Astro.props;
+const allPosts = await getSortedPostsList();
+const filteredPosts = allPosts.filter((post) => post.data.tags?.includes(name));
+const title = `${i18n(I18nKey.archive)} - #${name}`;
+---
+<MainGridLayout title={title}>
+    <h1 class="sr-only">{title}</h1>
+    <ArchivePanel client:load sortedPosts={filteredPosts}></ArchivePanel>
+</MainGridLayout>

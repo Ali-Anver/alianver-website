@@ -1,0 +1,57 @@
+---
+import { getEntry, render } from "astro:content";
+import Markdown from "../components/post/Markdown.astro";
+import ArchiveHeader from "@components/pages/ArchiveHeader.astro";
+import Comments from "../components/post/Comments.astro";
+import I18nKey from "../i18n/i18nKey";
+import { i18n } from "../i18n/translation";
+import Layout from "../layouts/Layout.astro";
+import { profileConfig, siteConfig } from "../config";
+import "../styles/cepato.css";
+
+const aboutLonetrail = await getEntry("spec", "about-lonetrail");
+
+interface Section {
+	title: string;
+	Content: Awaited<ReturnType<typeof render>>["Content"];
+}
+
+const sections: Section[] = [];
+if (aboutLonetrail) {
+	const { Content } = await render(aboutLonetrail);
+	sections.push({ title: aboutLonetrail.data.title, Content });
+}
+
+const aboutLabel = i18n(I18nKey.about);
+const pageTitle = `${aboutLabel} - ${siteConfig.title}`;
+const metaDescription = `${profileConfig.name} / ${siteConfig.title} - ${siteConfig.subtitle}`;
+---
+<Layout title={pageTitle} description={metaDescription}>
+    <div class="py-12 md:py-16 flex flex-col items-center gap-0 overflow-x-hidden pt-14">
+
+        <ArchiveHeader
+            title={i18n(I18nKey.about)}
+            count={sections.length}
+            variant="dark"
+        />
+
+        {sections.length > 0 ? sections.map(({ title, Content }) => (
+            <div class="relative w-full max-w-[840px] bg-lt-bg paper-texture shadow-2xl px-6 md:px-16 py-12 border-b border-lt-border/30">
+                {title && <h1 class="text-3xl md:text-4xl font-bold font-sans text-lt-ink mb-2">{title}</h1>}
+                <div class="prose custom-md dark:prose-invert max-w-none">
+                    <Markdown>
+                        <Content />
+                    </Markdown>
+                </div>
+            </div>
+        )) : (
+            <div class="relative w-full max-w-[840px] bg-lt-bg paper-texture shadow-2xl px-6 md:px-16 py-12">
+                <h1 class="text-3xl font-bold font-sans text-lt-ink mb-4">{i18n(I18nKey.about)}</h1>
+                <p class="text-lt-muted">Create content in <code>src/content/spec/</code></p>
+            </div>
+        )}
+
+        <Comments />
+
+    </div>
+</Layout>

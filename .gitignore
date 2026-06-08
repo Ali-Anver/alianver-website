@@ -1,0 +1,37 @@
+# Log files
+*.log
+logs
+*.log.*
+ci_logs/
+
+# Node
+node_modules/
+dist/
+.astro/
+package-lock.json
+yarn.lock
+
+# Build artifacts
+*.vsix
+*.zip
+
+# OS
+.DS_Store
+
+# User-specific
+.vscode/
+.idea/
+.history/
+*.bak
+.npmrc
+
+# Pagefind
+pagefind/
+
+# Netlify
+.netlify/
+
+# Local reference project
+.fuwari_ref/
+!bun.lockb
+*.lockb
