@@ -23,6 +23,7 @@ profile:
 
 nav:
   - Home: "/"
+  - Income & Health: "/interactive_income_health/"
   - Archive: "/archive/"
   - Series: "/seri/"
   - Links: "/links/"

@@ -1,0 +1,661 @@
+<title>Income & Health &mdash; SHARE, ELSA & HRS</title>
+<style>
+  /* ============================ TOKENS ============================ */
+  .ih {
+    --page:        #f4f6f8;
+    --surface:     #ffffff;
+    --ink:         #14181c;
+    --ink-2:       #566069;
+    --muted:       #8b939b;
+    --grid:        #e5e9ed;
+    --axis:        #c4ccd3;
+    --hair:        rgba(20,24,28,0.10);
+    --hair-strong: rgba(20,24,28,0.16);
+    --focus:       #2a78d6;
+    --c-north: #2a78d6;  /* blue  &mdash; Northern Europe */
+    --c-east:  #1baf7a;  /* green &mdash; Central & Eastern Europe */
+    --c-south: #eda100;  /* gold  &mdash; Southern Europe */
+    --c-west:  #e34948;  /* red   &mdash; Western Europe */
+    --c-comp:  #b5179e;  /* magenta &mdash; US & England (non-SHARE) */
+    --c-solo:  #14181c;
+    --faint:   rgba(20,24,28,0.16);
+    color-scheme: light;
+    color: var(--ink); background: var(--page);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased; line-height: 1.5; font-size: 16px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .ih {
+      --page: #0e1114; --surface: #161a1e; --ink: #f1f4f6; --ink-2: #aab3bb;
+      --muted: #7f888f; --grid: #262c32; --axis: #333b42;
+      --hair: rgba(255,255,255,0.10); --hair-strong: rgba(255,255,255,0.18);
+      --focus: #5598e7;
+      --c-north: #3987e5; --c-east: #199e70; --c-south: #c98500; --c-west: #e66767;
+      --c-comp: #d05ac0; --c-solo: #f1f4f6; --faint: rgba(255,255,255,0.18);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] .ih {
+    --page: #0e1114; --surface: #161a1e; --ink: #f1f4f6; --ink-2: #aab3bb;
+    --muted: #7f888f; --grid: #262c32; --axis: #333b42;
+    --hair: rgba(255,255,255,0.10); --hair-strong: rgba(255,255,255,0.18);
+    --focus: #5598e7;
+    --c-north: #3987e5; --c-east: #199e70; --c-south: #c98500; --c-west: #e66767;
+    --c-comp: #d05ac0; --c-solo: #f1f4f6; --faint: rgba(255,255,255,0.18);
+    color-scheme: dark;
+  }
+
+  /* ============================ LAYOUT ============================ */
+  .ih { padding: clamp(18px, 4vw, 44px) 0 60px; min-height: 100vh; box-sizing: border-box; }
+  .ih__wrap { width: min(1060px, 92vw); margin: 0 auto; position: relative; }
+  .ih__eyebrow { font-size: 12px; letter-spacing: .13em; text-transform: uppercase; color: var(--ink-2); font-weight: 600; margin: 0 0 10px; padding-right: 44px; }
+  .ih__theme { position: absolute; top: 0; right: 0; display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--hair-strong); background: var(--surface); color: var(--ink-2); cursor: pointer; transition: color .15s, background .15s; }
+  .ih__theme:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 5%, var(--surface)); }
+  .ih__ic-sun { display: none; }
+  :root[data-theme="dark"] .ih__theme .ih__ic-sun { display: block; }
+  :root[data-theme="dark"] .ih__theme .ih__ic-moon { display: none; }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .ih__theme .ih__ic-sun { display: block; }
+    :root:where(:not([data-theme="light"])) .ih__theme .ih__ic-moon { display: none; }
+  }
+  .ih__title { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; font-size: clamp(26px, 4.6vw, 42px); line-height: 1.08; margin: 0 0 12px; color: var(--ink); }
+  .ih__dek { max-width: 66ch; color: var(--ink-2); font-size: clamp(15px,1.6vw,17px); margin: 0 0 22px; }
+  .ih__dek b { color: var(--ink); font-weight: 600; }
+  .ih__rule { border: 0; border-top: 1px solid var(--hair); margin: 0 0 20px; }
+
+  /* ---------------------------- controls ---------------------------- */
+  .ih__controls { display: flex; flex-wrap: wrap; gap: 18px 24px; align-items: flex-end; margin-bottom: 22px; }
+  .ih__ctl { display: flex; flex-direction: column; gap: 7px; }
+  .ih__ctl > label { font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .ih__seg { display: inline-flex; border: 1px solid var(--hair-strong); border-radius: 8px; overflow: hidden; background: var(--surface); }
+  .ih__seg button { appearance: none; border: 0; background: transparent; cursor: pointer; font: inherit; font-size: 13.5px; color: var(--ink-2); font-weight: 500; padding: 8px 13px; line-height: 1.1; white-space: nowrap; border-right: 1px solid var(--hair); transition: background .15s, color .15s; }
+  .ih__seg button:last-child { border-right: 0; }
+  .ih__seg button:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+  .ih__seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); font-weight: 600; }
+  .ih__row { display: flex; align-items: center; gap: 10px; }
+  select.ih__select { appearance: none; font: inherit; font-size: 14px; color: var(--ink); background: var(--surface); background-image: linear-gradient(45deg, transparent 50%, var(--ink-2) 50%), linear-gradient(135deg, var(--ink-2) 50%, transparent 50%); background-position: calc(100% - 16px) 55%, calc(100% - 11px) 55%; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; border: 1px solid var(--hair-strong); border-radius: 8px; padding: 8px 34px 8px 12px; cursor: pointer; min-width: 176px; }
+  select.ih__select:disabled { opacity: .45; cursor: not-allowed; }
+  .ih__check { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: var(--ink); user-select: none; }
+  .ih__check input { appearance: none; width: 34px; height: 20px; border-radius: 999px; background: var(--axis); position: relative; cursor: pointer; transition: background .15s; flex: none; }
+  .ih__check input::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .16s; box-shadow: 0 1px 2px rgba(0,0,0,.3); }
+  .ih__check input:checked { background: var(--ink); }
+  .ih__check input:checked::after { transform: translateX(14px); }
+  .ih__check.dim { opacity: .5; }
+  .ih__chips { display: flex; flex-wrap: wrap; gap: 6px; max-width: 360px; }
+  .ih__chip-sel { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink); background: var(--surface); border: 1px solid var(--hair-strong); border-left: 3px solid var(--chipc); border-radius: 6px; padding: 3px 3px 3px 8px; }
+  .ih__chip-sel i { width: 8px; height: 8px; border-radius: 2px; background: var(--chipc); flex: none; }
+  .ih__chip-sel.off { opacity: .45; }
+  .ih__chip-sel button { appearance: none; border: 0; background: none; cursor: pointer; color: var(--muted); font-size: 15px; line-height: 1; padding: 0 3px; border-radius: 4px; }
+  .ih__chip-sel button:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 8%, transparent); }
+  :where(button, select, input, [tabindex]).ih-focusable:focus-visible,
+  .ih__seg button:focus-visible, select.ih__select:focus-visible, .ih__check input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  /* ---------------------------- figure ---------------------------- */
+  .ih__figure { background: var(--surface); border: 1px solid var(--hair); border-radius: 14px; padding: 18px 16px 10px; position: relative; }
+  .ih__charthead { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 4px 6px 12px; flex-wrap: wrap; }
+  .ih__chart-title { font-family: Georgia, "Iowan Old Style", serif; font-size: 18px; font-weight: 600; margin: 0; color: var(--ink); }
+  .ih__chart-sub { font-size: 12.5px; color: var(--muted); }
+  .ih__svgwrap { position: relative; width: 100%; }
+  svg.ih__svg { display: block; width: 100%; height: auto; touch-action: pan-y; }
+  .ih__svg text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .ih__axistitle { fill: var(--ink-2); font-size: 12.5px; font-weight: 600; }
+  .ih__tick { fill: var(--muted); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+  .ih__endlab { font-size: 11.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  /* tooltip */
+  .ih__tip { position: absolute; pointer-events: none; z-index: 5; background: var(--surface); border: 1px solid var(--hair-strong); border-radius: 9px; box-shadow: 0 6px 22px rgba(0,0,0,.14); padding: 9px 11px; font-size: 12.5px; min-width: 150px; opacity: 0; transform: translateY(2px); transition: opacity .1s; }
+  .ih__tip.on { opacity: 1; }
+  .ih__tip-h { display: flex; align-items: center; gap: 7px; font-weight: 700; color: var(--ink); margin-bottom: 5px; font-size: 13px; }
+  .ih__tip-sw { width: 9px; height: 9px; border-radius: 2px; flex: none; }
+  .ih__tip-row { display: flex; justify-content: space-between; gap: 16px; color: var(--ink-2); }
+  .ih__tip-row b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ih__tip-n { color: var(--muted); font-size: 11px; margin-top: 4px; }
+
+  /* legend */
+  .ih__legend { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 12px 8px 4px; font-size: 12.5px; color: var(--ink-2); align-items: center; }
+  .ih__legend.hidden { display: none; }
+  .ih__leg-item { display: inline-flex; align-items: center; gap: 7px; }
+  .ih__leg-sw { width: 22px; height: 3px; border-radius: 2px; }
+
+  /* matched-income readout */
+  .ih__matched { margin: 10px 6px 2px; padding: 12px 14px; border: 1px solid var(--hair-strong); border-radius: 10px; background: color-mix(in srgb, var(--focus) 7%, var(--surface)); }
+  .ih__matched.hidden { display: none; }
+  .ih__matched-h { font-size: 14px; color: var(--ink); }
+  .ih__matched-h b { font-weight: 700; }
+  .ih__matched-h .up { color: var(--focus); }
+  .ih__matched-rows { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 9px; }
+  .ih__matched-cols { display: flex; flex-wrap: wrap; gap: 16px 40px; margin-top: 11px; }
+  .ih__matched-col { display: flex; flex-direction: column; gap: 5px; }
+  .ih__matched-chips { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+  .ih__matched-lab { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+  .ih__chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink); border: 1px solid var(--hair-strong); border-left-width: 3px; border-radius: 6px; padding: 3px 8px; font-variant-numeric: tabular-nums; }
+  .ih__chip i { width: 8px; height: 8px; border-radius: 2px; }
+  .ih__chip b { font-weight: 700; }
+  .ih__matched-note { font-size: 11.5px; color: var(--muted); margin-top: 8px; }
+
+  .ih__reading { margin: 20px 2px 0; font-size: clamp(15px,1.7vw,17px); color: var(--ink); max-width: 68ch; line-height: 1.55; }
+  .ih__reading b { font-weight: 600; }
+  .ih__reading .up { color: var(--c-north); font-weight: 700; }
+
+  .ih__toolbar { display: flex; justify-content: flex-end; gap: 14px; margin-top: 14px; }
+  .ih__link { appearance: none; background: none; border: 0; cursor: pointer; font: inherit; font-size: 13px; color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; padding: 4px 2px; }
+  .ih__link:hover { color: var(--ink); }
+
+  /* table */
+  .ih__tablewrap { margin-top: 16px; overflow-x: auto; border: 1px solid var(--hair); border-radius: 10px; }
+  .ih__tablewrap.hidden { display: none; }
+  table.ih__table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  .ih__table th, .ih__table td { padding: 7px 12px; text-align: right; border-bottom: 1px solid var(--hair); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .ih__table th:first-child, .ih__table td:first-child { text-align: left; }
+  .ih__table thead th { color: var(--ink-2); font-weight: 600; position: sticky; top: 0; background: var(--surface); }
+  .ih__table tbody tr:hover { background: color-mix(in srgb, var(--ink) 4%, transparent); }
+
+  .ih__notes { margin-top: 26px; padding-top: 16px; border-top: 1px solid var(--hair); font-size: 12.5px; color: var(--muted); line-height: 1.6; max-width: 80ch; }
+  .ih__notes b { color: var(--ink-2); font-weight: 600; }
+
+  @media (max-width: 560px) { .ih__controls { gap: 14px 18px; } select.ih__select { min-width: 150px; } }
+  @media (prefers-reduced-motion: reduce) { .ih * { transition: none !important; } }
+</style>
+
+<div class="ih">
+  <div class="ih__wrap">
+    <button id="theme-toggle" class="ih__theme ih-focusable" aria-label="Toggle light or dark theme" title="Toggle light / dark">
+      <svg class="ih__ic-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"></path></svg>
+      <svg class="ih__ic-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+    </button>
+    <p class="ih__eyebrow">SHARE &middot; ELSA &middot; HRS &mdash; Europe, England &amp; the United States &middot; ages 50+</p>
+    <h1 class="ih__title">Does health follow your rank, or your riches?</h1>
+    <p class="ih__dek">Older people who sit higher in their country's income distribution report better health.
+      Switch the horizontal axis between <b>relative position</b> (income rank) and <b>absolute purchasing power</b>
+      (PPP income); compare 28 European countries plus <b>England</b> and the <b>United States</b>; and use the
+      <b>matched-income spotlight</b> to ask it directly &mdash; is it better to be rich in a poor country, or poor in a rich one?</p>
+    <hr class="ih__rule" />
+
+    <div class="ih__controls">
+      <div class="ih__ctl">
+        <label id="lbl-measure">Health measure</label>
+        <div class="ih__seg" role="group" aria-labelledby="lbl-measure" id="seg-measure">
+          <button data-m="srh" aria-pressed="true">Self-rated health</button>
+          <button data-m="casp" aria-pressed="false">Life satisfaction</button>
+          <button data-m="eurod" aria-pressed="false">Depression</button>
+        </div>
+      </div>
+      <div class="ih__ctl">
+        <label id="lbl-x">Horizontal axis</label>
+        <div class="ih__seg" role="group" aria-labelledby="lbl-x" id="seg-x">
+          <button data-x="rank" aria-pressed="true">Income rank</button>
+          <button data-x="abs" aria-pressed="false">Absolute income (PPP&nbsp;$)</button>
+        </div>
+      </div>
+      <div class="ih__ctl">
+        <label id="lbl-groups">Income groups</label>
+        <div class="ih__seg" role="group" aria-labelledby="lbl-groups" id="seg-groups">
+          <button data-g="10" aria-pressed="true">Deciles</button>
+          <button data-g="5" aria-pressed="false">Quintiles</button>
+        </div>
+      </div>
+      <div class="ih__ctl">
+        <label id="lbl-age">Age adjustment</label>
+        <div class="ih__seg" role="group" aria-labelledby="lbl-age" id="seg-age">
+          <button data-a="0" aria-pressed="true">Raw</button>
+          <button data-a="1" aria-pressed="false">Age-adjusted</button>
+        </div>
+      </div>
+      <div class="ih__ctl">
+        <label for="sel-wave">Survey wave (year)</label>
+        <div class="ih__row"><select id="sel-wave" class="ih__select ih-focusable"></select></div>
+      </div>
+      <div class="ih__ctl">
+        <label for="sel-country">Highlight countries</label>
+        <div class="ih__row"><select id="sel-country" class="ih__select ih-focusable"></select></div>
+        <div class="ih__chips" id="sel-chips"></div>
+      </div>
+      <div class="ih__ctl">
+        <label id="lbl-cmp">View</label>
+        <label class="ih__check"><input type="checkbox" id="chk-all" class="ih-focusable" checked /> Compare all</label>
+        <label class="ih__check" id="lbl-spot"><input type="checkbox" id="chk-spot" class="ih-focusable" /> Matched-income spotlight</label>
+      </div>
+    </div>
+
+    <div class="ih__figure">
+      <div class="ih__charthead">
+        <h2 class="ih__chart-title" id="chart-title">Self-rated health by income rank</h2>
+        <span class="ih__chart-sub" id="chart-sub"></span>
+      </div>
+      <div class="ih__svgwrap" id="svgwrap">
+        <svg class="ih__svg" id="svg" role="img" aria-labelledby="chart-title"></svg>
+        <div class="ih__tip" id="tip" aria-hidden="true"></div>
+      </div>
+      <div class="ih__legend" id="legend"></div>
+      <div class="ih__matched hidden" id="matched"></div>
+    </div>
+
+    <p class="ih__reading" id="reading"></p>
+
+    <div class="ih__toolbar">
+      <button class="ih__link ih-focusable" id="btn-table" aria-expanded="false">Show data table</button>
+    </div>
+    <div class="ih__tablewrap hidden" id="tablewrap"><table class="ih__table" id="table"></table></div>
+
+    <div class="ih__notes">
+      <b>How to read this.</b> Each point is a within-country income group (a <b>decile</b> = tenth, or a quintile = fifth):
+      poorest on the left, richest on the right. Groups are computed <b>within each country and survey wave</b>, so "rank"
+      means position among one's compatriots. The vertical value is the <b>mean</b> of the chosen measure for that group.<br /><br />
+      <b>Measures.</b> Self-rated health (1&ndash;5, reversed so 5 = excellent) is the <b>only measure harmonised across all three
+      surveys</b>, so England and the United States appear only for it. Life satisfaction (SHARE CASP-12, 12&ndash;48) and
+      depression (EURO-D, 0&ndash;12, higher = worse) are SHARE-only, because ELSA/HRS use different well-being and CES-D scales.<br /><br />
+      <b>Age adjustment.</b> "Age-adjusted" directly standardises each group to a common 5-year age distribution, so cross-country
+      differences aren't driven by one place being older than another. "Raw" is the unadjusted mean.<br /><br />
+      <b>Absolute income.</b> Household income is converted to <b>PPP-adjusted international dollars</b> (World Bank 2017 price
+      levels, US = 1), so &euro;1 in Sofia, &pound;1 in London and $1 in Ohio sit on a common purchasing-power scale. Each group is
+      plotted at its <b>median</b> income. The axis is <b>piecewise</b>: it gives the crowded $0&ndash;$50k range most of the width
+      and compresses everything above $100k into a short tail (so tick spacing narrows toward the right); the very few groups above
+      $250k sit at the edge, with their true value in the tooltip. The <b>matched-income spotlight</b> reads off every country's
+      health at one income &mdash; the spread at equal income is the relative / country-context effect.<br /><br />
+      <b>Survey wave.</b> The default <b>~2015</b> view shows each place at its wave nearest 2015; countries that joined later
+      (much of Central &amp; Eastern Europe, at 2019) and the non-SHARE comparators are drawn <b>dashed with their actual year</b>.
+      SHARE single-wave options cover SHARE countries only; "All waves" pools each place across its own rounds (a repeated
+      cross-section, not a within-person panel).<br /><br />
+      <b>Sources.</b> SHARE Rel 9.0.0 (28 countries, Israel excluded); ELSA and HRS via their harmonised files (RAND HRS).
+      Household income (SHARE net; ELSA/HRS total). Descriptive means, unweighted. Built for a PSE master's thesis on relative income and health.
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA = __DATA__;
+
+(function () {
+  "use strict";
+  const M = DATA.meta.measures;
+  const countries = Object.values(DATA.countries).sort((a,b)=>a.name.localeCompare(b.name));
+  const byName = {}; countries.forEach(c => byName[c.name] = c);
+  const REGION_VAR = { North:"--c-north", West:"--c-west", South:"--c-south", East:"--c-east", Comparator:"--c-comp" };
+  const REGION_ORDER = ["North","West","South","East"];
+  const REGION_LABEL = { North:"Northern Europe", West:"Western Europe", South:"Southern Europe", East:"Central & Eastern Europe", Comparator:"US & England (non-SHARE)" };
+  const GROUPS = ["10","5"];
+  const WAVE_ORDER = DATA.meta.wave_order;
+  const WAVE_YEARS = DATA.meta.wave_years;
+
+  const state = { m:"srh", x:"rank", ng:"10", wave:DATA.meta.default_wave||"all", ageStd:false, all:true, spotlight:false, selected:["Germany"] };
+  state.selected = state.selected.filter(n=>byName[n]); if(!state.selected.length) state.selected=[countries[0].name];
+  const mkey = () => state.ageStd ? state.m + "_as" : state.m;
+
+  // ---- global domains (over entities, groupings, waves, raw + age-std) ----
+  const allBins = [];
+  countries.forEach(c => Object.keys(c.waves).forEach(w => GROUPS.forEach(k => { const b=c.waves[w][k];
+    b.g.forEach((gg,i) => allBins.push({ srh:b.srh[i], srh_as:b.srh_as[i], casp:b.casp[i], casp_as:b.casp_as[i],
+      eurod:b.eurod[i], eurod_as:b.eurod_as[i], ppp_med:b.ppp_med[i] })); })));
+  // Piecewise absolute-income axis: gives the crowded 0-50k range most of the width and
+  // compresses everything above 100k into a short tail. [0,50k]->44%, [50k,100k]->30%, [100k,MAX]->26%.
+  const ABS_BP1=50000, ABS_BP2=100000, ABS_MAX=250000, ABS_F1=0.44, ABS_F2=0.30;
+  const ABS_TICKS=[0,25000,50000,75000,100000,150000,250000];
+  const anyBeyond = allBins.some(b=>b.ppp_med>ABS_MAX);
+  function normAbs(v){ v=Math.max(0,Math.min(v,ABS_MAX));
+    if(v<=ABS_BP1) return ABS_F1*(v/ABS_BP1);
+    if(v<=ABS_BP2) return ABS_F1+ABS_F2*((v-ABS_BP1)/(ABS_BP2-ABS_BP1));
+    return ABS_F1+ABS_F2+(1-ABS_F1-ABS_F2)*((v-ABS_BP2)/(ABS_MAX-ABS_BP2)); }
+  function invAbs(frac){ frac=Math.max(0,Math.min(1,frac)); const F3=1-ABS_F1-ABS_F2;
+    if(frac<=ABS_F1) return frac/ABS_F1*ABS_BP1;
+    if(frac<=ABS_F1+ABS_F2) return ABS_BP1+(frac-ABS_F1)/ABS_F2*(ABS_BP2-ABS_BP1);
+    return ABS_BP2+(frac-ABS_F1-ABS_F2)/F3*(ABS_MAX-ABS_BP2); }
+  function yExtent(m){ const keys=[m,m+"_as"], v=[];
+    allBins.forEach(b=>keys.forEach(k=>{ const x=b[k]; if(x!=null&&!isNaN(x)) v.push(x); }));
+    let lo=Math.min(...v), hi=Math.max(...v); const p=(hi-lo)*0.08; return [lo-p, hi+p]; }
+  const yDom = { srh:yExtent("srh"), casp:yExtent("casp"), eurod:yExtent("eurod") };
+
+  // ---- helpers ----
+  const cssVar = n => getComputedStyle(document.querySelector(".ih")).getPropertyValue(n).trim();
+  const regionColor = r => cssVar(REGION_VAR[r] || "--c-solo");
+  const measureShown = c => M[state.m].cross || !c.is_comp;              // comparators only on cross measures
+  const hasWave = c => !!c.waves[state.wave] && measureShown(c);
+  const availCountries = () => countries.filter(hasWave);
+  const selectedAvail = () => state.selected.map(n=>byName[n]).filter(c=>c && hasWave(c));   // highlighted & present
+  const focusName = () => { if(hoverCountry && byName[hoverCountry] && hasWave(byName[hoverCountry])) return hoverCountry;
+    const s=selectedAvail(); return s.length ? s[0].name : (availCountries()[0] ? availCountries()[0].name : null); };
+  const gb = c => { const w=c.waves[state.wave]; return w ? w[state.ng] : null; };
+  const entYear = c => { const w=c.waves[state.wave]; return w ? w.year : null; };
+  const isComposite = () => state.wave==="c2015";
+  const offYear = c => isComposite() && entYear(c) && entYear(c)!==2015;
+  const unitNoun = () => state.ng==="10" ? "decile" : "quintile";
+  const unitFrac = () => state.ng==="10" ? "tenth" : "fifth";
+  const waveShort = () => state.wave==="all" ? "pooled, all waves" : (state.wave==="c2015" ? "~2015" : WAVE_YEARS[state.wave]);
+  const mShort = () => state.m==="srh"?"Self-rated health":state.m==="casp"?"Life satisfaction":"Depression";
+  const fmtMoney = v => v>=1000 ? "$"+Math.round(v/1000)+"k" : "$"+Math.round(v);
+  const fmtMoneyFull = v => "$"+Math.round(v).toLocaleString("en-US");
+  function fmtVal(m,v){ return v==null||isNaN(v) ? "\u2014" : v.toFixed(M[m].dp); }
+
+  const SVG=document.getElementById("svg"), TIP=document.getElementById("tip"), WRAP=document.getElementById("svgwrap");
+  const NS="http://www.w3.org/2000/svg";
+  function el(tag,attrs){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); return e; }
+
+  let W=900,H=560; const pad={t:20,r:120,b:54,l:52};
+  let xScale,yScale,plotW,plotH;
+  function niceTicksLinear(lo,hi,count){ const span=hi-lo, s0=span/count, mag=Math.pow(10,Math.floor(Math.log10(s0)));
+    const nm=s0/mag; let step=nm<1.5?1:nm<3?2:nm<7?5:10; step*=mag; const start=Math.ceil(lo/step)*step, out=[];
+    for(let v=start;v<=hi+1e-9;v+=step) out.push(+v.toFixed(6)); return out; }
+  function logTicks(lo,hi){ return [2000,5000,10000,20000,50000,100000,200000,500000].filter(v=>v>=lo*0.98&&v<=hi*1.02); }
+  function computeScales(){
+    const rect=WRAP.getBoundingClientRect(); W=Math.max(320,rect.width);
+    H = W<560 ? Math.round(W*0.9) : Math.min(560, Math.round(W*0.60));
+    plotW=W-pad.l-pad.r; plotH=H-pad.t-pad.b;
+    if(state.x==="rank"){ const k=+state.ng; xScale=d=>pad.l+(d-1)/(k-1)*plotW; }
+    else { xScale=v=>pad.l + normAbs(v)*plotW; }   // piecewise: expands 0-50k, compresses >100k
+    const [ylo,yhi]=yDom[state.m]; yScale=v=>pad.t+(1-(v-ylo)/(yhi-ylo))*plotH;
+  }
+  const xInvAbs = px => invAbs((px-pad.l)/plotW);
+
+  function seriesPoints(c){
+    const b=gb(c); const pts=[]; if(!b) return pts; const key=mkey();
+    for(let i=0;i<b.g.length;i++){ const yv=b[key][i]; if(yv==null||isNaN(yv)) continue;
+      const inc=b.ppp_med[i]; if(state.x==="abs"&&!(inc>0)) continue;
+      const xv=state.x==="rank"?b.g[i]:inc;
+      pts.push({x:xScale(xv),y:yScale(yv),xv,yv,d:b.g[i],ppp:inc,eur:b.eur_med[i],n:b.n_bin[i],clamped:state.x==="abs"&&inc>ABS_MAX}); }
+    return pts;
+  }
+  const pathD = pts => pts.map((p,i)=>(i?"L":"M")+p.x.toFixed(1)+" "+p.y.toFixed(1)).join(" ");
+
+  function healthAtIncome(c,T){   // interpolate current measure at PPP income T
+    const b=gb(c); if(!b) return null; const key=mkey(); const pts=[];
+    for(let i=0;i<b.g.length;i++){ const y=b[key][i],p=b.ppp_med[i]; if(y==null||isNaN(y)||!(p>0)) continue; pts.push({p,y}); }
+    pts.sort((a,z)=>a.p-z.p);
+    if(pts.length<2||T<pts[0].p||T>pts[pts.length-1].p) return null;
+    for(let i=1;i<pts.length;i++){ if(T<=pts[i].p){ const a=pts[i-1],z=pts[i],f=(T-a.p)/(z.p-a.p); return a.y+f*(z.y-a.y); } }
+    return pts[pts.length-1].y;
+  }
+
+  let hoverCountry=null, matchIncome=null, matchG=null;
+
+  function render(){
+    computeScales(); matchG=null;
+    while(SVG.firstChild) SVG.removeChild(SVG.firstChild);
+    SVG.setAttribute("viewBox",`0 0 ${W} ${H}`); SVG.setAttribute("height",H);
+    const gridC=cssVar("--grid"), axisC=cssVar("--axis");
+    const [ylo,yhi]=yDom[state.m];
+
+    niceTicksLinear(ylo,yhi,5).forEach(v=>{ const y=yScale(v);
+      SVG.appendChild(el("line",{x1:pad.l,x2:pad.l+plotW,y1:y,y2:y,stroke:gridC,"stroke-width":1}));
+      const t=el("text",{x:pad.l-9,y:y+4,"text-anchor":"end",class:"ih__tick"}); t.textContent=(+v.toFixed(M[state.m].dp)); SVG.appendChild(t); });
+    SVG.appendChild(el("line",{x1:pad.l,x2:pad.l+plotW,y1:pad.t+plotH,y2:pad.t+plotH,stroke:axisC,"stroke-width":1}));
+    if(state.x==="rank"){ const k=+state.ng,frac=unitFrac();
+      for(let d=1;d<=k;d++){ const x=xScale(d); const t=el("text",{x:x,y:pad.t+plotH+20,"text-anchor":"middle",class:"ih__tick"}); t.textContent=d; SVG.appendChild(t); }
+      const xt=el("text",{x:pad.l+plotW/2,y:H-8,"text-anchor":"middle",class:"ih__axistitle"});
+      xt.textContent=`Income ${unitNoun()}  (1 = poorest ${frac}  \u2192  ${k} = richest ${frac})`; SVG.appendChild(xt);
+    } else {
+      const tx=ABS_TICKS.map(v=>({v,x:xScale(v)}));
+      tx.forEach(o=> SVG.appendChild(el("line",{x1:o.x,x2:o.x,y1:pad.t,y2:pad.t+plotH,stroke:gridC,"stroke-width":1})));
+      const MINL=46, keep=[]; let last=-1e9;                       // label greedily, skip overlaps, always keep the max
+      tx.slice(0,-1).forEach(o=>{ if(o.x-last>=MINL){ keep.push(o); last=o.x; } });
+      const lastT=tx[tx.length-1];
+      if(keep.length && lastT.x-keep[keep.length-1].x < MINL) keep.pop();
+      keep.push(lastT);
+      keep.forEach(o=>{ const t=el("text",{x:o.x,y:pad.t+plotH+20,"text-anchor":"middle",class:"ih__tick"}); t.textContent=((o.v>=ABS_MAX&&anyBeyond)?fmtMoney(o.v)+"+":fmtMoney(o.v)); SVG.appendChild(t); });
+      const xt=el("text",{x:pad.l+plotW/2,y:H-8,"text-anchor":"middle",class:"ih__axistitle"});
+      xt.textContent=`Median household income per ${unitNoun()}  \u00B7  PPP-adjusted international $`; SVG.appendChild(xt);
+    }
+    const asTag = state.ageStd ? "  (age-adjusted)" : "";
+    const yt2=el("text",{x:0,y:0,"text-anchor":"middle",class:"ih__axistitle",transform:`translate(15,${pad.t+plotH/2}) rotate(-90)`});
+    yt2.textContent = (M[state.m].better==="down" ? "Mean EURO-D  (higher = worse)"
+      : (state.m==="srh" ? "Mean self-rated health  (higher = better)" : "Mean CASP-12  (higher = better)")) + asTag;
+    SVG.appendChild(yt2);
+
+    const hset = new Set(selectedAvail().map(c=>c.name));   // countries drawn as highlights
+    if(hoverCountry && byName[hoverCountry] && hasWave(byName[hoverCountry])) hset.add(hoverCountry);
+    if(state.all){
+      availCountries().forEach(c=>{ if(hset.has(c.name)) return;
+        const pts=seriesPoints(c); if(pts.length<2) return;
+        SVG.appendChild(el("path",Object.assign({d:pathD(pts),fill:"none",stroke:regionColor(c.region),
+          "stroke-width":c.is_comp?2:1.4,"stroke-opacity":c.is_comp?0.75:0.32,"stroke-linejoin":"round","stroke-linecap":"round"},
+          offYear(c)?{"stroke-dasharray":"5 4"}:{}))); });
+      hset.forEach(n=> drawHighlight(byName[n]));
+    } else {
+      if(hset.size) hset.forEach(n=> drawHighlight(byName[n]));
+      else noSelectionNote();
+    }
+    if(state.spotlight && state.x==="abs"){ if(matchIncome==null) matchIncome=30000; drawMatchLine(); }
+
+    drawLegend(); updateTexts(); updateMatchedReadout();
+  }
+
+  function noSelectionNote(){ const t=el("text",{x:pad.l+plotW/2,y:pad.t+plotH/2,"text-anchor":"middle",class:"ih__axistitle",fill:cssVar("--muted")});
+    t.textContent="Add one or more countries to highlight, or turn on Compare all"; SVG.appendChild(t); }
+
+  function drawHighlight(c){
+    if(!c) return; const pts=seriesPoints(c); if(!pts.length) return;
+    const col=regionColor(c.region);
+    SVG.appendChild(el("path",Object.assign({d:pathD(pts),fill:"none",stroke:col,"stroke-width":2.6,"stroke-linejoin":"round","stroke-linecap":"round"},
+      offYear(c)?{"stroke-dasharray":"6 4"}:{})));
+    pts.forEach(p=>SVG.appendChild(el("circle",{cx:p.x,cy:p.y,r:4.2,fill:cssVar("--surface"),stroke:col,"stroke-width":2})));
+    const last=pts[pts.length-1];
+    const lab=el("text",{x:last.x+9,y:last.y+4,class:"ih__endlab",fill:col});
+    lab.textContent = c.name + (offYear(c)?` (${entYear(c)})`:"");
+    SVG.appendChild(lab);
+  }
+
+  function drawMatchLine(){
+    matchG=el("g",{}); const x=xScale(matchIncome);
+    matchG.appendChild(el("line",{x1:x,x2:x,y1:pad.t-2,y2:pad.t+plotH,stroke:cssVar("--focus"),"stroke-width":1.5,"stroke-dasharray":"2 3"}));
+    const t=el("text",{x:x,y:pad.t-6,"text-anchor":"middle",class:"ih__endlab",fill:cssVar("--focus")}); t.textContent=fmtMoney(matchIncome);
+    matchG.appendChild(t); SVG.appendChild(matchG);
+  }
+
+  function drawLegend(){
+    const L=document.getElementById("legend");
+    if(!state.all){ L.className="ih__legend hidden"; L.innerHTML=""; return; }
+    L.className="ih__legend";
+    const regs = REGION_ORDER.concat(M[state.m].cross ? ["Comparator"] : []);
+    let html = `<span style="color:var(--muted);font-weight:600">Region:</span>` +
+      regs.map(r=>`<span class="ih__leg-item"><span class="ih__leg-sw" style="background:${regionColor(r)}"></span>${REGION_LABEL[r]}</span>`).join("");
+    if(isComposite()) html += `<span class="ih__leg-item"><span class="ih__leg-sw" style="background:transparent;border-top:2px dashed var(--muted)"></span>data from a different year (labelled)</span>`;
+    L.innerHTML = html;
+  }
+
+  function updateTexts(){
+    const yr = waveShort();
+    document.getElementById("chart-title").textContent = `${mShort()} by ${state.x==="rank"?("income "+unitNoun()):"absolute income"}`;
+    const fc = focusName(); const c = fc ? byName[fc] : null, b = c ? gb(c) : null;
+    const cLabel = isComposite() ? "~2015" : yr;
+    if (state.all){
+      document.getElementById("chart-sub").textContent = `${availCountries().length} ${M[state.m].cross?"populations":"countries"} \u00B7 ${cLabel}${state.ageStd?" \u00B7 age-adjusted":""}`;
+    } else if (selectedAvail().length > 1){
+      document.getElementById("chart-sub").textContent = `${selectedAvail().length} countries \u00B7 ${cLabel}${state.ageStd?" \u00B7 age-adjusted":""}`;
+    } else if (b){
+      const nWave = b.n_bin.reduce((a,x)=>a+x,0);
+      const y2 = isComposite() ? (entYear(c)||"~2015") : yr;
+      document.getElementById("chart-sub").textContent = `${c.name} \u00B7 ${y2} \u00B7 n = ${nWave.toLocaleString()}`;
+    } else {
+      document.getElementById("chart-sub").textContent = "\u2014";
+    }
+    const R = document.getElementById("reading");
+    if (!c || !b){ R.innerHTML = state.all ? "" : `Add a country to highlight, or turn on <b>Compare all</b>.`; return; }
+    const arr = b[mkey()];
+    const lo=arr[0], hi=arr[arr.length-1];
+    const diff = hi-lo, dp=M[state.m].dp;
+    const dir = M[state.m].better==="down" ? (diff<0?"lower":"higher") : (diff>0?"higher":"lower");
+    const goodbad = ( (M[state.m].better==="up"&&diff>0) || (M[state.m].better==="down"&&diff<0) ) ? "better" : "worse";
+    const frac = unitFrac();
+    const y2 = isComposite() ? (entYear(c)||"~2015") : yr;
+    const pppLo=fmtMoneyFull(b.ppp_med[0]), pppHi=fmtMoneyFull(b.ppp_med[b.ppp_med.length-1]);
+    R.innerHTML =
+      `In <b>${c.name}</b> (${y2})${state.ageStd?", age-adjusted,":""} ${mShort().toLowerCase()} is <span class="up">${Math.abs(diff).toFixed(dp)} points ${dir}</span> `+
+      `in the richest ${frac} than the poorest \u2014 i.e. <b>${goodbad}</b> health among the better-off. `+
+      `Those top and bottom ${frac}s earn roughly <b>${pppHi}</b> vs <b>${pppLo}</b> a year (PPP).`;
+  }
+
+  function updateMatchedReadout(){
+    const box=document.getElementById("matched");
+    if(!(state.spotlight && state.x==="abs")){ box.className="ih__matched hidden"; return; }
+    box.className="ih__matched";
+    const T=matchIncome; if(T==null){ box.innerHTML=""; return; }
+    const rows=[];
+    availCountries().forEach(c=>{ const v=healthAtIncome(c,T); if(v!=null&&!isNaN(v)) rows.push({c,v}); });
+    if(rows.length<2){ box.innerHTML=`<div class="ih__matched-h">At <b>${fmtMoneyFull(T)}</b>/yr (PPP): too few places reach this income. Drag the line left.</div>`; return; }
+    const up = M[state.m].better==="up";
+    rows.sort((a,z)=> up ? z.v-a.v : a.v-z.v);           // healthiest first
+    const N=rows.length, k=Math.min(5, Math.floor(N/2)) || 1;
+    const top=rows.slice(0,k), bottom=rows.slice(N-k).reverse();   // worst listed worst-first
+    const spread=Math.abs(rows[0].v-rows[N-1].v);
+    const chip=o=>`<span class="ih__chip" style="border-left-color:${regionColor(o.c.region)}"><i style="background:${regionColor(o.c.region)}"></i>${o.c.name} <b>${fmtVal(state.m,o.v)}</b></span>`;
+    box.innerHTML =
+      `<div class="ih__matched-h">At <b>${fmtMoneyFull(T)}</b> a year (PPP), <b>${N}</b> places reach this income &mdash; their ${mShort().toLowerCase()} spans <b class="up">${spread.toFixed(M[state.m].dp)} points</b>.</div>`+
+      `<div class="ih__matched-cols">`+
+        `<div class="ih__matched-col"><div class="ih__matched-lab">Healthiest ${k}</div><div class="ih__matched-chips">${top.map(chip).join("")}</div></div>`+
+        `<div class="ih__matched-col"><div class="ih__matched-lab">Least healthy ${k}</div><div class="ih__matched-chips">${bottom.map(chip).join("")}</div></div>`+
+      `</div>`+
+      `<div class="ih__matched-note">Same income, different place &rarr; that spread is the <b>relative / country-context</b> effect. Move the cursor over the chart to change the income.</div>`;
+  }
+
+  // ---------------- crosshair + tooltip ----------------
+  let crossG=null;
+  function clearCross(){ if(crossG){crossG.remove();crossG=null;} TIP.classList.remove("on"); TIP.setAttribute("aria-hidden","true"); }
+
+  function onMove(ev){
+    const rect=SVG.getBoundingClientRect();
+    const sx=(ev.clientX-rect.left)*(W/rect.width);
+    const sy=(ev.clientY-rect.top)*(H/rect.height);
+    const inPlot = !(sx<pad.l-6||sx>pad.l+plotW+6||sy<pad.t-6||sy>pad.t+plotH+30);
+    if(state.spotlight && state.x==="abs"){
+      if(!inPlot) return;
+      matchIncome = xInvAbs(Math.max(pad.l, Math.min(pad.l+plotW, sx)));
+      if(matchG) matchG.remove(); drawMatchLine(); updateMatchedReadout(); return;
+    }
+    if(!inPlot){ clearCross(); if(state.all&&hoverCountry){hoverCountry=null;render();} return; }
+    if(state.all){
+      let best=null;
+      availCountries().forEach(c=>{ seriesPoints(c).forEach(p=>{ const dd=(p.x-sx)**2+(p.y-sy)**2; if(!best||dd<best.dd) best={dd,p,c}; }); });
+      if(!best){clearCross();return;}
+      const newHover = Math.sqrt(best.dd)<70 ? best.c.name : null;
+      if(newHover!==hoverCountry){ hoverCountry=newHover; render(); }
+      const c = byName[focusName()]; if(!c) return;
+      let np=null; seriesPoints(c).forEach(p=>{const dd=(p.x-sx)**2;if(!np||dd<np.dd)np={dd,p};});
+      if(np) showTip(c, np.p);
+    } else {
+      let best=null;
+      selectedAvail().forEach(c=>{ seriesPoints(c).forEach(p=>{ const dd=(p.x-sx)**2+(p.y-sy)**2; if(!best||dd<best.dd) best={dd,p,c}; }); });
+      if(!best){ clearCross(); return; }
+      const newHover = Math.sqrt(best.dd)<70 ? best.c.name : null;
+      if(newHover!==hoverCountry){ hoverCountry=newHover; render(); }
+      showTip(best.c, best.p);
+    }
+  }
+
+  function showTip(c, p){
+    if(crossG) crossG.remove(); crossG=el("g",{});
+    crossG.appendChild(el("line",{x1:p.x,x2:p.x,y1:pad.t,y2:pad.t+plotH,stroke:cssVar("--axis"),"stroke-width":1,"stroke-dasharray":"3 3"}));
+    const col = state.all ? regionColor(c.region) : cssVar("--c-solo");
+    crossG.appendChild(el("circle",{cx:p.x,cy:p.y,r:5.5,fill:col,stroke:cssVar("--surface"),"stroke-width":2}));
+    SVG.appendChild(crossG);
+    const ccy = c.survey==="ELSA" ? "\u00A3" : (c.survey==="HRS" ? "$" : "\u20AC");
+    const yrLine = isComposite() ? `<div class="ih__tip-row"><span>Year</span><b>${entYear(c)}</b></div>` : "";
+    const mName = state.m==="srh"?"Self-rated health":state.m==="casp"?"CASP-12":"EURO-D";
+    TIP.innerHTML =
+      `<div class="ih__tip-h"><span class="ih__tip-sw" style="background:${col}"></span>${c.name}</div>`+
+      yrLine+
+      `<div class="ih__tip-row"><span>${state.ng==="10"?"Decile":"Quintile"}</span><b>${p.d} / ${state.ng}</b></div>`+
+      `<div class="ih__tip-row"><span>${mName}${state.ageStd?" (adj.)":""}</span><b>${fmtVal(state.m,p.yv)}</b></div>`+
+      `<div class="ih__tip-row"><span>Median income</span><b>${fmtMoneyFull(p.ppp)}</b></div>`+
+      `<div class="ih__tip-row"><span>Median nominal</span><b>${ccy}${Math.round(p.eur).toLocaleString()}</b></div>`+
+      `<div class="ih__tip-n">${p.n.toLocaleString()} respondents</div>`;
+    TIP.classList.add("on"); TIP.setAttribute("aria-hidden","false");
+    const wr=WRAP.getBoundingClientRect();
+    const px=p.x*(wr.width/W), py=p.y*(wr.height/H);
+    let left=px+14; if(left+TIP.offsetWidth>wr.width) left=px-TIP.offsetWidth-14;
+    let top=Math.max(0,Math.min(py-10, wr.height-TIP.offsetHeight));
+    TIP.style.left=left+"px"; TIP.style.top=top+"px";
+  }
+
+  SVG.addEventListener("mousemove", onMove);
+  SVG.addEventListener("mouseleave", ()=>{ if(!(state.spotlight&&state.x==="abs")){ clearCross(); if(hoverCountry){hoverCountry=null;render();} } });
+
+  // ---------------- table view ----------------
+  function buildTable(){
+    const T=document.getElementById("table");
+    const list = state.all ? availCountries() : selectedAvail();
+    const key=mkey();
+    let head = `<thead><tr><th>Place</th>${isComposite()?"<th>Year</th>":""}<th>${state.ng==="10"?"Decile":"Quintile"}</th><th>Median PPP $</th><th>${state.m==="srh"?"SRH (1\u20135)":state.m==="casp"?"CASP-12":"EURO-D"}${state.ageStd?" adj.":""}</th><th>n</th></tr></thead>`;
+    let rows="";
+    list.forEach(c=>{ const b=gb(c); if(!b) return; const yr=entYear(c); for(let i=0;i<b.g.length;i++){
+      rows+=`<tr><td>${c.name}</td>${isComposite()?`<td>${yr??""}</td>`:""}<td>${b.g[i]}</td><td>${Math.round(b.ppp_med[i]).toLocaleString()}</td><td>${fmtVal(state.m,b[key][i])}</td><td>${b.n_bin[i].toLocaleString()}</td></tr>`;
+    }});
+    if(!rows) rows=`<tr><td colspan="6" style="text-align:center;color:var(--muted)">No data \u2014 choose another wave.</td></tr>`;
+    T.innerHTML=head+"<tbody>"+rows+"</tbody>";
+  }
+
+  // ---------------- wiring ----------------
+  const tableOpen = () => !document.getElementById("tablewrap").classList.contains("hidden");
+  const refreshTable = () => { if(tableOpen()) buildTable(); };
+
+  // ---- multi-country highlight: add-dropdown + removable chips ----
+  const sel=document.getElementById("sel-country"), chipsEl=document.getElementById("sel-chips");
+  function renderChips(){
+    chipsEl.innerHTML="";
+    state.selected.forEach(n=>{ const c=byName[n]; if(!c) return;
+      const off = !hasWave(c);                           // selected but absent in this wave/measure
+      const chip=document.createElement("span");
+      chip.className="ih__chip-sel"+(off?" off":"");
+      chip.style.setProperty("--chipc", regionColor(c.region));
+      chip.innerHTML=`<i></i>${n}<button aria-label="Remove ${n}">&times;</button>`;
+      chip.querySelector("button").addEventListener("click", ()=>{
+        state.selected=state.selected.filter(x=>x!==n); hoverCountry=null; populateCountrySelect(); render(); refreshTable(); });
+      chipsEl.appendChild(chip); });
+  }
+  function populateCountrySelect(){
+    const avail = availCountries();
+    sel.innerHTML="";
+    const ph=document.createElement("option"); ph.value=""; ph.textContent="+ add a country"; sel.appendChild(ph);
+    avail.filter(c=>!state.selected.includes(c.name)).forEach(c=>{ const o=document.createElement("option"); o.value=c.name; o.textContent=c.name; sel.appendChild(o); });
+    sel.value=""; renderChips();
+  }
+  populateCountrySelect();
+  sel.addEventListener("change", e=>{ const v=e.target.value; if(!v) return;
+    if(!state.selected.includes(v)) state.selected.push(v);
+    hoverCountry=null; populateCountrySelect(); render(); refreshTable(); });
+
+  const wsel=document.getElementById("sel-wave");
+  WAVE_ORDER.forEach(w=>{ const o=document.createElement("option"); o.value=w;
+    o.textContent = w==="c2015" ? "~2015 (all surveys)" : w==="all" ? "All waves (pooled)" : `${WAVE_YEARS[w]} (wave ${w})`;
+    wsel.appendChild(o); });
+  wsel.value=state.wave;
+  wsel.addEventListener("change", e=>{ state.wave=e.target.value; hoverCountry=null; populateCountrySelect(); render(); refreshTable(); });
+
+  function segWire(id, apply){ document.getElementById(id).addEventListener("click", e=>{
+    const b=e.target.closest("button"); if(!b) return;
+    apply(b); [...e.currentTarget.children].forEach(x=>x.setAttribute("aria-pressed", x===b));
+    hoverCountry=null; render(); refreshTable(); }); }
+  segWire("seg-measure", b=>{ state.m=b.dataset.m; populateCountrySelect(); });   // availability depends on measure
+  segWire("seg-x", b=>{ state.x=b.dataset.x; });
+  segWire("seg-groups", b=>{ state.ng=b.dataset.g; });
+  segWire("seg-age", b=>{ state.ageStd = b.dataset.a==="1"; });
+
+  document.getElementById("chk-all").addEventListener("change", e=>{ state.all=e.target.checked; hoverCountry=null; render(); refreshTable(); });
+  const spot=document.getElementById("chk-spot");
+  spot.addEventListener("change", e=>{
+    state.spotlight=e.target.checked;
+    if(state.spotlight && state.x!=="abs"){                       // spotlight needs the absolute axis
+      state.x="abs"; [...document.getElementById("seg-x").children].forEach(x=>x.setAttribute("aria-pressed", x.dataset.x==="abs"));
+    }
+    clearCross(); render();
+  });
+
+  const btnT=document.getElementById("btn-table"), wrapT=document.getElementById("tablewrap");
+  btnT.addEventListener("click", ()=>{ const hidden=wrapT.classList.toggle("hidden");
+    btnT.textContent=hidden?"Show data table":"Hide data table"; btnT.setAttribute("aria-expanded", String(!hidden)); if(!hidden) buildTable(); });
+
+  // ---- explicit light/dark toggle (works standalone; overrides the viewer theme) ----
+  const troot=document.documentElement;
+  const effDark = () => { const dt=troot.getAttribute("data-theme");
+    if(dt==="dark") return true; if(dt==="light") return false;
+    return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches); };
+  try{ const s=localStorage.getItem("ih-theme"); if(s==="dark"||s==="light") troot.setAttribute("data-theme",s); }catch(e){}
+  document.getElementById("theme-toggle").addEventListener("click", ()=>{
+    const goDark=!effDark(); troot.setAttribute("data-theme", goDark?"dark":"light");
+    try{ localStorage.setItem("ih-theme", goDark?"dark":"light"); }catch(e){}
+  });
+
+  let rt; new ResizeObserver(()=>{ clearTimeout(rt); rt=setTimeout(render,80); }).observe(WRAP);
+  new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+  if(window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", render);
+
+  render();
+})();
+</script>
